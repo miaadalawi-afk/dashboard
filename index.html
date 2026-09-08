@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة أداء دوائر الخدمة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dark-green:#173F33;
+    --dark-green-2:#0f2b23;
+    --gold:#B9902E;
+    --gold-light:#e8d3a3;
+    --sand:#F6F1E7;
+    --ok:#2E7D4F;
+    --ok-bg:#e3f3ea;
+    --danger:#B0342C;
+    --danger-bg:#fbe7e5;
+    --warning:#c98a1b;
+    --warning-bg:#faf0dc;
+    --surface:#ffffff;
+    --text:#20261f;
+    --muted:#6b7568;
+    --border:#e5ddc9;
+    --shadow:0 2px 10px rgba(23,63,51,.08),0 1px 2px rgba(23,63,51,.06);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--sand);
+    color:var(--text);
+    font-family:"Tajawal","Segoe UI",Tahoma,Arial,sans-serif;
+    min-height:100vh;
+  }
+  a{color:inherit}
+  ::selection{background:var(--gold-light)}
+
+  /* ---------- layout shell ---------- */
+  header.topbar{
+    position:sticky; top:0; z-index:40;
+    background:linear-gradient(180deg,var(--dark-green),var(--dark-green-2));
+    color:#fff;
+    box-shadow:var(--shadow);
+  }
+  .topbar-inner{
+    max-width:1400px; margin:0 auto; padding:14px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:10px}
+  .brand .logo{
+    width:38px;height:38px;border-radius:10px;background:var(--gold);
+    display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--dark-green);font-size:1.1rem;flex:none;
+  }
+  .brand h1{font-size:1.05rem; margin:0; font-weight:700}
+  .brand span.sub{display:block;font-size:.72rem;color:#cfe0d8;font-weight:400}
+
+  .topbar-controls{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  select.tb-select, input.tb-input{
+    background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.28);
+    border-radius:10px; padding:8px 10px; font-family:inherit; font-size:.82rem; cursor:pointer;
+  }
+  select.tb-select option{color:#111}
+  .btn{
+    border:none; border-radius:10px; padding:9px 16px; font-family:inherit; font-size:.85rem;
+    font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+  }
+  .btn-gold{background:var(--gold); color:#241a05}
+  .btn-gold:hover{filter:brightness(1.06)}
+  .btn-ghost{background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.28)}
+  .btn-ghost:hover{background:rgba(255,255,255,.2)}
+  .btn-outline{background:transparent;border:1px solid var(--border); color:var(--text)}
+  .btn-outline:hover{background:#fff}
+  .btn-sm{padding:6px 10px;font-size:.75rem;border-radius:8px}
+
+  main{max-width:1400px; margin:0 auto; padding:20px}
+  section.block{margin-bottom:26px}
+  .block-head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap}
+  .block-head h2{font-size:1.05rem; margin:0; color:var(--dark-green); display:flex; align-items:center; gap:8px}
+  .block-head .desc{font-size:.78rem; color:var(--muted); margin-top:2px}
+  .count-badge{
+    display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; padding:0 6px;
+    border-radius:999px; font-size:.72rem; font-weight:800; background:var(--dark-green); color:#fff;
+  }
+
+  /* ---------- upload zone ---------- */
+  .upload-panel{
+    background:var(--surface); border:1.5px dashed var(--gold); border-radius:var(--radius);
+    padding:22px; text-align:center; box-shadow:var(--shadow); position:relative;
+  }
+  .upload-panel.dragover{background:var(--gold-light); border-color:var(--dark-green)}
+  .upload-panel h3{margin:6px 0 4px; color:var(--dark-green); font-size:1rem}
+  .upload-panel p{margin:0 0 14px; color:var(--muted); font-size:.82rem}
+  .upload-icon{font-size:2rem}
+  .file-list{margin-top:14px; text-align:right; display:grid; gap:6px}
+  .file-chip{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:var(--sand); border:1px solid var(--border); border-radius:10px; padding:8px 12px; font-size:.8rem;
+  }
+  .file-chip .name{font-weight:700}
+  .file-chip .meta{color:var(--muted); font-size:.72rem}
+  .file-chip .kind-tag{
+    font-size:.68rem; padding:2px 8px; border-radius:999px; font-weight:700;
+  }
+  .kind-business{background:var(--ok-bg); color:var(--ok)}
+  .kind-employees{background:#e6ecfa; color:#2b4c9b}
+  .kind-unknown{background:var(--danger-bg); color:var(--danger)}
+  .file-chip button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:1rem;line-height:1}
+
+  /* ---------- empty state ---------- */
+  .empty-state{
+    background:var(--surface); border:1px dashed var(--border); border-radius:var(--radius);
+    padding:30px 20px; text-align:center; color:var(--muted); font-size:.85rem;
+  }
+  .empty-state .ic{font-size:1.8rem; margin-bottom:8px; display:block}
+
+  /* ---------- KPI bar ---------- */
+  .kpi-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:12px}
+  @media (max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:620px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+  .kpi-card{
+    background:var(--surface); border-radius:var(--radius); padding:16px 14px; box-shadow:var(--shadow);
+    border-top:3px solid var(--gold); position:relative; min-height:104px;
+  }
+  .kpi-card .kicon{font-size:1.1rem}
+  .kpi-card .klabel{color:var(--muted); font-size:.76rem; margin:6px 0 4px; font-weight:700}
+  .kpi-card .kvalue{font-size:1.35rem; font-weight:900; color:var(--dark-green)}
+  .kpi-card .kdelta{font-size:.72rem; margin-top:5px; font-weight:700}
+  .kpi-card .kdelta.up{color:var(--ok)}
+  .kpi-card .kdelta.down{color:var(--danger)}
+  .kpi-card .kdelta.flat{color:var(--muted)}
+  .kpi-card .kna{font-size:.72rem; color:var(--muted); font-style:italic}
+
+  /* ---------- tooltip ---------- */
+  .tip{position:relative; display:inline-flex; cursor:help}
+  .tip .tip-bubble{
+    position:absolute; bottom:calc(100% + 8px); right:50%; transform:translateX(50%);
+    background:var(--dark-green); color:#fff; padding:10px 12px; border-radius:10px; font-size:.72rem;
+    width:250px; line-height:1.6; box-shadow:var(--shadow); z-index:60; text-align:right;
+    opacity:0; pointer-events:none; transition:opacity .12s; font-weight:400;
+  }
+  .tip:hover .tip-bubble, .tip:focus .tip-bubble{opacity:1}
+  .tip .tip-bubble b{color:var(--gold-light)}
+  .info-dot{
+    width:16px;height:16px;border-radius:50%;background:var(--border);color:var(--dark-green);
+    font-size:.65rem; display:inline-flex; align-items:center; justify-content:center; font-weight:900;
+  }
+
+  /* ---------- map ---------- */
+  .map-wrap{
+    background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px;
+    display:grid; grid-template-columns:1fr 260px; gap:18px;
+  }
+  @media (max-width:800px){.map-wrap{grid-template-columns:1fr}}
+  .gov-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:64px; gap:8px;
+  }
+  .gov-tile{
+    border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:#fff; font-size:.72rem; font-weight:700; cursor:pointer; padding:4px; text-align:center;
+    border:2px solid transparent; transition:transform .12s;
+  }
+  .gov-tile:hover{transform:scale(1.04); border-color:var(--gold)}
+  .gov-tile.selected{border-color:var(--dark-green); box-shadow:0 0 0 2px var(--gold)}
+  .gov-tile .g-val{font-size:.66rem; font-weight:400; opacity:.9; margin-top:2px}
+  .gov-tile.empty-tile{background:transparent; cursor:default; box-shadow:none}
+  .map-legend{display:flex; flex-direction:column; gap:8px; font-size:.75rem; color:var(--muted); justify-content:center}
+  .map-legend .lg-row{display:flex; align-items:center; gap:8px}
+  .lg-swatch{width:14px;height:14px;border-radius:4px}
+  .map-note{font-size:.7rem; color:var(--muted); margin-top:10px; line-height:1.6}
+
+  /* ---------- comparison cards ---------- */
+  .compare-toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .branch-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px}
+  .branch-card{
+    background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px;
+    border:1px solid var(--border); cursor:pointer; transition:box-shadow .15s;
+  }
+  .branch-card:hover{box-shadow:0 4px 18px rgba(23,63,51,.15)}
+  .branch-card.active{border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-light)}
+  .branch-card .bc-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px}
+  .branch-card h3{margin:0; font-size:.95rem; color:var(--dark-green)}
+  .branch-card .gov-label{font-size:.68rem; color:var(--muted)}
+  .rel-badge{
+    display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-weight:900; font-size:.78rem;
+  }
+  .rel-badge .arrow{font-size:.7rem}
+  .rel-green{background:var(--ok-bg); color:var(--ok)}
+  .rel-amber{background:var(--warning-bg); color:var(--warning)}
+  .rel-red{background:var(--danger-bg); color:var(--danger)}
+  .mini-bars{display:grid; gap:5px; margin-top:12px}
+  .mini-bar-row{display:grid; grid-template-columns:70px 1fr 44px; align-items:center; gap:6px; font-size:.68rem; color:var(--muted)}
+  .mini-bar-track{background:var(--sand); border-radius:6px; height:7px; overflow:hidden}
+  .mini-bar-fill{height:100%; background:var(--gold); border-radius:6px}
+  .branch-card .bc-total{margin-top:12px; font-size:.8rem; color:var(--text); font-weight:700}
+
+  /* ---------- alerts ---------- */
+  .alerts-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  @media (max-width:900px){.alerts-grid{grid-template-columns:1fr}}
+  .alert-panel{background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; max-height:420px; overflow:auto}
+  .alert-panel h3{margin:0 0 10px; font-size:.92rem; color:var(--dark-green); display:flex; align-items:center; gap:8px}
+  .alert-item{
+    display:flex; gap:10px; padding:10px 8px; border-radius:10px; margin-bottom:6px; font-size:.78rem; align-items:flex-start;
+  }
+  .alert-item.sev-critical{background:var(--danger-bg)}
+  .alert-item.sev-warning{background:var(--warning-bg)}
+  .alert-item.sev-info{background:var(--sand)}
+  .alert-dot{width:9px;height:9px;border-radius:50%; margin-top:5px; flex:none}
+  .alert-item.sev-critical .alert-dot{background:var(--danger)}
+  .alert-item.sev-warning .alert-dot{background:var(--warning)}
+  .alert-item.sev-info .alert-dot{background:var(--muted)}
+  .alert-item .a-msg{flex:1}
+  .alert-item .a-ctx{display:block; color:var(--muted); font-size:.68rem; margin-top:2px}
+  .alert-empty{color:var(--muted); font-size:.8rem; padding:20px; text-align:center}
+
+  /* ---------- circle detail tabs ---------- */
+  .circle-detail{background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+  .circle-detail-head{
+    background:var(--dark-green); color:#fff; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  }
+  .circle-detail-head h3{margin:0; font-size:1.05rem}
+  .tabs{display:flex; border-bottom:1px solid var(--border); background:var(--sand)}
+  .tab-btn{
+    flex:1; padding:11px; text-align:center; border:none; background:none; cursor:pointer; font-family:inherit;
+    font-size:.85rem; font-weight:700; color:var(--muted); border-bottom:3px solid transparent;
+  }
+  .tab-btn.active{color:var(--dark-green); border-color:var(--gold); background:#fff}
+  .tab-panel{padding:20px; display:none}
+  .tab-panel.active{display:block}
+  .charts-row{display:grid; grid-template-columns:1.4fr 1fr; gap:20px}
+  @media (max-width:800px){.charts-row{grid-template-columns:1fr}}
+  .chart-box{border:1px solid var(--border); border-radius:12px; padding:14px}
+  .chart-box h4{margin:0 0 10px; font-size:.82rem; color:var(--dark-green)}
+  .gauge-row{display:grid; gap:12px; margin-top:6px}
+  .gauge-label{display:flex; justify-content:space-between; font-size:.75rem; margin-bottom:4px}
+  .gauge-track{background:var(--sand); border-radius:8px; height:12px; position:relative; overflow:hidden}
+  .gauge-fill{height:100%; border-radius:8px}
+  .gauge-target-mark{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--dark-green)}
+
+  table.data-table{width:100%; border-collapse:collapse; font-size:.8rem}
+  table.data-table th, table.data-table td{padding:9px 8px; text-align:right; border-bottom:1px solid var(--border)}
+  table.data-table th{color:var(--muted); font-size:.72rem; font-weight:700}
+  table.data-table tr:hover td{background:var(--sand)}
+  .flag-icon{color:var(--warning); font-weight:900}
+  .na-text{color:var(--muted); font-style:italic}
+
+  select.local-select{
+    border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-family:inherit; font-size:.78rem; background:#fff;
+  }
+
+  /* ---------- toasts ---------- */
+  #toastHost{position:fixed; bottom:18px; left:18px; z-index:100; display:flex; flex-direction:column; gap:8px; max-width:340px}
+  .toast{
+    background:var(--dark-green); color:#fff; padding:12px 14px; border-radius:10px; font-size:.8rem; box-shadow:var(--shadow);
+    display:flex; align-items:flex-start; gap:8px; animation:toastIn .18s ease-out;
+  }
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--danger)}
+  .toast.warn{background:var(--warning); color:#241a05}
+  @keyframes toastIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
+
+  footer.app-footer{text-align:center; padding:26px; color:var(--muted); font-size:.75rem}
+
+  .hidden{display:none !important}
+  ::-webkit-scrollbar{width:8px; height:8px}
+  ::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo">خ</div>
+      <div>
+        <h1>لوحة أداء دوائر الخدمة</h1>
+        <span class="sub">حجم الأعمال · أداء الموظفين · جودة البيانات وموثوقية الدوائر</span>
+      </div>
+    </div>
+    <div class="topbar-controls">
+      <select id="periodType" class="tb-select"></select>
+      <select id="periodValue" class="tb-select"></select>
+      <button class="btn btn-ghost btn-sm" id="toggleUploadBtn" type="button">📁 إدارة الملفات</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="block" id="uploadSection">
+    <div class="upload-panel" id="dropZone">
+      <span class="upload-icon">📊</span>
+      <h3>رفع ملفات البيانات (Excel)</h3>
+      <p>اسحب ملفات حجم الأعمال أو أداء الموظفين هنا، أو اضغط للاختيار — يتم اكتشاف نوع الملف تلقائيًا من أسماء الأوراق.</p>
+      <button class="btn btn-gold" type="button" id="pickFilesBtn">اختيار ملفات Excel</button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" multiple class="hidden">
+      <div class="file-list" id="fileList"></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>📈 المؤشرات الرئيسية <span class="desc" id="kpiPeriodLabel"></span></h2>
+    </div>
+    <div id="kpiHost"></div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>🗺️ خارطة المحافظات <span class="tip"><span class="info-dot">؟</span><span class="tip-bubble">خارطة تخطيطية (غير جغرافية دقيقة) لمحافظات عُمان، تُلوَّن حسب إجمالي الأعمال المنجزة للدوائر التابعة لكل محافظة في الفترة المختارة.</span></span></h2>
+    </div>
+    <div id="mapHost"></div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>⚖️ مقارنة الدوائر</h2>
+      <div class="compare-toolbar">
+        <label class="local-select" style="border:none;background:none;padding:0;color:var(--muted)">ترتيب حسب</label>
+        <select id="sortSelect" class="local-select">
+          <option value="total">إجمالي الأعمال</option>
+          <option value="reliability">موثوقية الدائرة</option>
+          <option value="name">الاسم</option>
+        </select>
+      </div>
+    </div>
+    <div id="compareHost"></div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>🚨 لوحات التنبيهات</h2>
+    </div>
+    <div class="alerts-grid">
+      <div class="alert-panel">
+        <h3>♻️ تنبيهات التكرار وأنماط الإدخال <span class="count-badge" id="dupCount">0</span></h3>
+        <div id="dupAlerts"></div>
+      </div>
+      <div class="alert-panel">
+        <h3>🧪 تنبيهات جودة البيانات <span class="count-badge" id="qualCount">0</span></h3>
+        <div id="qualAlerts"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>🏢 تفاصيل الدائرة</h2>
+      <select id="circleSelect" class="local-select"></select>
+    </div>
+    <div id="circleDetailHost"></div>
+  </section>
+
+</main>
+
+<footer class="app-footer">لوحة تحليلية بدون خطوة بناء — تعمل بالكامل داخل المتصفح (SheetJS + Canvas + Vanilla JS)</footer>
+
+<div id="toastHost"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+"use strict";
+
+// ---------- Arabic normalization ----------
+function normalizeArabic(s) {
+  if (s == null) return "";
+  s = String(s);
+  s = s.replace(/[ً-ْٰ]/g, ""); // tashkeel
+  s = s.replace(/[إأآا]/g, "ا");
+  s = s.replace(/ى/g, "ي");
+  s = s.replace(/ة/g, "ه");
+  s = s.replace(/ؤ/g, "و");
+  s = s.replace(/ئ/g, "ي");
+  s = s.replace(/[\n\r]+/g, " ");
+  s = s.replace(/\s+/g, " ");
+  s = s.trim().toLowerCase();
+  return s;
+}
+
+function headerIncludes(headerText, keywords) {
+  var n = normalizeArabic(headerText);
+  for (var i = 0; i < keywords.length; i++) {
+    if (n.indexOf(normalizeArabic(keywords[i])) !== -1) return true;
+  }
+  return false;
+}
+
+// ---------- value parsing ----------
+var ERROR_STRINGS = ["#REF!", "#DIV/0!", "#VALUE!", "#N/A", "#NAME?", "#NULL!", "#NUM!"];
+
+function parseNumericCell(v) {
+  if (v === null || v === undefined || v === "") {
+    return { value: null, status: "blank" };
+  }
+  if (typeof v === "number") {
+    if (isNaN(v)) return { value: null, status: "error" };
+    return { value: v, status: "ok" };
+  }
+  var s = String(v).trim();
+  if (s === "") return { value: null, status: "blank" };
+  if (ERROR_STRINGS.indexOf(s) !== -1) return { value: null, status: "error", raw: s };
+  var pct = s.match(/^-?\d+(\.\d+)?\s*%$/);
+  if (pct) return { value: parseFloat(s) / 100, status: "ok" };
+  var num = Number(s.replace(/,/g, ""));
+  if (!isNaN(num) && s.replace(/,/g, "") !== "") return { value: num, status: "ok" };
+  return { value: null, status: "error", raw: s };
+}
+
+// duration like "150:38:33" or "0150:38:33" or "6:14:59" -> seconds
+function parseDurationToSeconds(v) {
+  if (v === null || v === undefined || v === "") return { value: null, status: "blank" };
+  var s = String(v).trim();
+  var m = s.match(/^(\d{1,5}):(\d{2}):(\d{2})$/);
+  if (m) {
+    var h = parseInt(m[1], 10), mi = parseInt(m[2], 10), se = parseInt(m[3], 10);
+    return { value: h * 3600 + mi * 60 + se, status: "ok" };
+  }
+  var m2 = s.match(/^(\d{1,3}):(\d{2})$/);
+  if (m2) {
+    return { value: parseInt(m2[1], 10) * 60 + parseInt(m2[2], 10), status: "ok" };
+  }
+  if (ERROR_STRINGS.indexOf(s) !== -1) return { value: null, status: "error", raw: s };
+  return { value: null, status: "error", raw: s };
+}
+
+// clock time "HH:MM" (time of day, not duration)
+function parseClockTime(v) {
+  if (v === null || v === undefined || v === "") return { value: null, status: "blank" };
+  var s = String(v).trim();
+  var m = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (m) {
+    var h = parseInt(m[1], 10), mi = parseInt(m[2], 10);
+    if (h > 23 || mi > 59) return { value: null, status: "error", raw: s };
+    return { value: h * 60 + mi, status: "ok", text: s };
+  }
+  if (ERROR_STRINGS.indexOf(s) !== -1) return { value: null, status: "error", raw: s };
+  return { value: null, status: "error", raw: s };
+}
+
+// ---------- month / period maps ----------
+var MONTHS_AR = [
+  { num: 1, names: ["يناير"] },
+  { num: 2, names: ["فبراير"] },
+  { num: 3, names: ["مارس"] },
+  { num: 4, names: ["ابريل", "أبريل"] },
+  { num: 5, names: ["مايو"] },
+  { num: 6, names: ["يونيو"] },
+  { num: 7, names: ["يوليو"] },
+  { num: 8, names: ["اغسطس", "أغسطس"] },
+  { num: 9, names: ["سبتمبر"] },
+  { num: 10, names: ["اكتوبر", "أكتوبر"] },
+  { num: 11, names: ["نوفمبر"] },
+  { num: 12, names: ["ديسمبر"] }
+];
+
+function matchMonthFromSheetName(sheetName) {
+  var n = normalizeArabic(sheetName);
+  for (var i = 0; i < MONTHS_AR.length; i++) {
+    var mo = MONTHS_AR[i];
+    for (var j = 0; j < mo.names.length; j++) {
+      if (n.indexOf(normalizeArabic(mo.names[j])) !== -1) return mo.num;
+    }
+  }
+  return null;
+}
+
+function detectPeriodFromSheetName(sheetName) {
+  var n = normalizeArabic(sheetName);
+  if (n.indexOf(normalizeArabic("النصف الاول")) !== -1) return { type: "half", key: 1, label: "النصف الأول" };
+  if (n.indexOf(normalizeArabic("النصف الثاني")) !== -1) return { type: "half", key: 2, label: "النصف الثاني" };
+  if (n.indexOf(normalizeArabic("الربع الاول")) !== -1) return { type: "quarter", key: 1, label: "الربع الأول" };
+  if (n.indexOf(normalizeArabic("الربع الثاني")) !== -1) return { type: "quarter", key: 2, label: "الربع الثاني" };
+  if (n.indexOf(normalizeArabic("الربع الثالث")) !== -1) return { type: "quarter", key: 3, label: "الربع الثالث" };
+  if (n.indexOf(normalizeArabic("الربع الرابع")) !== -1) return { type: "quarter", key: 4, label: "الربع الرابع" };
+  var mNum = matchMonthFromSheetName(sheetName);
+  if (mNum) return { type: "month", key: mNum, label: MONTHS_AR[mNum - 1].names[0] };
+  return null;
+}
+
+function extractYearFromText(text) {
+  if (!text) return null;
+  var m = String(text).match(/(20\d{2})/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// ---------- branch normalization ----------
+var BRANCH_ALIASES = {};
+(function () {
+  var pairs = [
+    ["الفرع الرئيسي", "الرئيسي"]
+  ];
+  pairs.forEach(function (p) {
+    BRANCH_ALIASES[normalizeArabic(p[0])] = p[1];
+  });
+})();
+
+function normalizeBranchName(raw) {
+  if (!raw) return null;
+  var trimmed = String(raw).trim();
+  var n = normalizeArabic(trimmed);
+  if (BRANCH_ALIASES[n]) return BRANCH_ALIASES[n];
+  return trimmed;
+}
+
+var STOP_ROW_KEYWORDS = ["المجموع الكلي", "الاجمالي", "الإجمالي", "المتوسط", "المتوسطات", "الحد الاقصى", "الحد الأقصى", "Report Version"];
+
+function isStopRowText(text) {
+  if (!text) return false;
+  var n = normalizeArabic(text);
+  return STOP_ROW_KEYWORDS.some(function (k) { return n.indexOf(normalizeArabic(k)) !== -1; });
+}
+
+// ---------- business workbook parsing ----------
+var BUSINESS_FIELD_KEYWORDS = {
+  branch: ["الفرع"],
+  transactions: ["حجم المعاملات"],
+  activities: ["الانشطه الاعلاميه", "الأنشطة الإعلامية", "التواصل المجتمعي"],
+  field: ["الخدمه الميدانيه", "الخدمة الميدانية"],
+  proactive: ["الاستباقيه", "الأستباقية", "الاستباقية"],
+  selfService: ["الخدمه الذاتيه", "الخدمة الذاتية"],
+  appointments: ["حجز المواعيد"],
+  whatsapp: ["الواتس"],
+  qr: ["qr"],
+  totalCompleted: ["اجمالي الاعمال المنجزه", "إجمالي الأعمال المنجزة"],
+  ratioAppointments: ["نسبه حجز المواعيد من اجمالي حجم الاعمال", "نسبة حجز المواعيد من اجمالي حجم الأعمال"],
+  ratioAppointmentsSimple: ["نسبه حجز المواعيد"],
+  ratioProactiveField: ["نسبه الخدمات الاستباقيه والميدانيه", "نسبة الخدمات الاستباقية والميدانية"],
+  ratioSelfService: ["نسبه الخدمات الذاتيه من اجمالي حجم المعاملات", "نسبة الخدمات الذاتية من اجمالي حجم المعاملات"],
+  ratioAppointmentsVisitors: ["نسبه حجز المواعيد من اجمالي المراجعين", "نسبة حجز المواعيد من اجمالي المراجعين"],
+  qrTarget: ["تحقيق مجموع تقييم"]
+};
+
+function findHeaderRow(sheetRows) {
+  for (var r = 0; r < sheetRows.length; r++) {
+    var row = sheetRows[r];
+    for (var c = 0; c < row.length; c++) {
+      if (headerIncludes(row[c], BUSINESS_FIELD_KEYWORDS.branch)) {
+        return r;
+      }
+    }
+  }
+  return -1;
+}
+
+function sheetToAOA(worksheet, XLSXlib) {
+  return XLSXlib.utils.sheet_to_json(worksheet, { header: 1, defval: null, raw: true });
+}
+
+function buildColumnMap(headerRow) {
+  var map = {};
+  var used = {};
+  Object.keys(BUSINESS_FIELD_KEYWORDS).forEach(function (field) {
+    for (var c = 0; c < headerRow.length; c++) {
+      if (used[c]) continue;
+      var cellText = headerRow[c];
+      if (cellText == null) continue;
+      // skip qrTarget from matching plain 'qr' field
+      if (field === "qr" && headerIncludes(cellText, BUSINESS_FIELD_KEYWORDS.qrTarget)) continue;
+      if (headerIncludes(cellText, BUSINESS_FIELD_KEYWORDS[field])) {
+        map[field] = c;
+        used[c] = true;
+        break;
+      }
+    }
+  });
+  return map;
+}
+
+function parseBusinessSheet(sheetName, aoa, titleRowsJoined, fileName, issues) {
+  var period = detectPeriodFromSheetName(sheetName);
+  if (!period) return []; // not a recognized data sheet (e.g. 'change %', 'quarter 3')
+
+  var headerRowIdx = findHeaderRow(aoa);
+  if (headerRowIdx === -1) {
+    issues.push({ severity: "warning", type: "no_header", message: "تعذر إيجاد صف العناوين في الورقة \"" + sheetName + "\"", file: fileName, sheet: sheetName });
+    return [];
+  }
+  var headerRow = aoa[headerRowIdx];
+  var colMap = buildColumnMap(headerRow);
+  if (colMap.branch === undefined) {
+    issues.push({ severity: "warning", type: "no_branch_col", message: "لم يتم العثور على عمود \"الفرع\" في الورقة \"" + sheetName + "\"", file: fileName, sheet: sheetName });
+    return [];
+  }
+  var year = extractYearFromText(titleRowsJoined) || extractYearFromText(sheetName);
+
+  var rows = [];
+  var seenBranches = {};
+  for (var r = headerRowIdx + 1; r < aoa.length; r++) {
+    var row = aoa[r];
+    var branchRaw = row[colMap.branch];
+    if (branchRaw == null || String(branchRaw).trim() === "") continue;
+    if (isStopRowText(branchRaw)) break;
+    var branch = normalizeBranchName(branchRaw);
+    var bkey = normalizeArabic(branch);
+    if (seenBranches[bkey]) {
+      issues.push({ severity: "critical", type: "duplicate_branch_row", message: "تكرار صف الفرع \"" + branch + "\" أكثر من مرة في نفس الورقة (" + sheetName + ")", file: fileName, sheet: sheetName, branch: branch, period: period, year: year });
+    }
+    seenBranches[bkey] = true;
+
+    var rowIssues = [];
+    function getMetric(field) {
+      if (colMap[field] === undefined) return { value: null, status: "missing" };
+      var raw = row[colMap[field]];
+      return parseNumericCell(raw);
+    }
+    function getRatio(field) {
+      if (colMap[field] === undefined) return { value: null, status: "missing" };
+      var raw = row[colMap[field]];
+      var res = parseNumericCell(raw);
+      if (res.status === "ok" && (res.value < -0.001 || res.value > 1.2)) {
+        rowIssues.push({
+          severity: "warning", type: "illogical_ratio",
+          message: "قيمة نسبة غير منطقية (" + (res.value * 100).toFixed(1) + "%) في عمود مرتبط بـ \"" + field + "\" لفرع " + branch,
+          file: fileName, sheet: sheetName, branch: branch, period: period, year: year
+        });
+      }
+      return res;
+    }
+
+    var metrics = {
+      transactions: getMetric("transactions"),
+      activities: getMetric("activities"),
+      field: getMetric("field"),
+      proactive: getMetric("proactive"),
+      selfService: getMetric("selfService"),
+      appointments: getMetric("appointments"),
+      whatsapp: getMetric("whatsapp"),
+      qr: getMetric("qr"),
+      totalCompleted: getMetric("totalCompleted")
+    };
+    var ratios = {
+      ratioAppointments: getRatio(colMap.ratioAppointments !== undefined ? "ratioAppointments" : "ratioAppointmentsSimple"),
+      ratioProactiveField: getRatio("ratioProactiveField"),
+      ratioSelfService: getRatio("ratioSelfService")
+    };
+
+    Object.keys(metrics).forEach(function (k) {
+      if (metrics[k].status === "error") {
+        rowIssues.push({ severity: "critical", type: "cell_error", message: "خطأ صيغة (" + (metrics[k].raw || "?") + ") في عمود \"" + k + "\" لفرع " + branch + " - " + sheetName, file: fileName, sheet: sheetName, branch: branch, period: period, year: year });
+      }
+    });
+
+    var coreFields = ["transactions", "selfService", "proactive", "field", "totalCompleted"];
+    var coreOkCount = coreFields.filter(function (k) { return metrics[k].status === "ok"; }).length;
+    var coreBlankCount = coreFields.filter(function (k) { return metrics[k].status === "blank"; }).length;
+    if (coreOkCount > 0 && coreBlankCount > 0) {
+      rowIssues.push({ severity: "warning", type: "incomplete_row", message: "بيانات غير مكتملة لفرع " + branch + " في " + sheetName + " (حقول فارغة ضمن صف يحتوي بيانات)", file: fileName, sheet: sheetName, branch: branch, period: period, year: year });
+    }
+
+    rowIssues.forEach(function (i) { issues.push(i); });
+
+    rows.push({
+      id: fileName + "|" + sheetName + "|" + branch,
+      file: fileName, sheet: sheetName,
+      period: period, year: year,
+      branch: branch,
+      metrics: metrics,
+      ratios: ratios,
+      issuesCount: rowIssues.length
+    });
+  }
+  return rows;
+}
+
+// ---------- employees workbook parsing ----------
+var EMP_SHEET_RE = /^\s*موظفين\s+(.+?)\s*شهر\s*(\d{1,2})\s*$/;
+
+var EMP_FIELD_KEYWORDS = {
+  idlePct: ["الخمول"],
+  idleTime: ["وقت الخمول"],
+  avgTxnTime: ["متوسط وقت المعامله", "متوسط وقت المعاملة"],
+  totalTxnTime: ["اجمالي وقت المعاملات", "إجمالي وقت المعاملات"],
+  absentees: ["غير الحاضرين"],
+  served: ["المخدومون"],
+  totalLoginTime: ["اجمالي وقت تسجيل", "إجمالي وقت تسجيل"],
+  lastLogout: ["اخر تسجيل خروج", "آخر تسجيل خروج"],
+  firstLogin: ["اول تسجيل دخول", "أول تسجيل دخول"],
+  employeeName: ["اسم الموظف"]
+};
+
+function findEmpHeaderRow(aoa) {
+  for (var r = 0; r < aoa.length; r++) {
+    var row = aoa[r];
+    for (var c = 0; c < row.length; c++) {
+      if (headerIncludes(row[c], EMP_FIELD_KEYWORDS.employeeName)) return r;
+    }
+  }
+  return -1;
+}
+
+function buildEmpColumnMap(headerRow) {
+  var map = {};
+  Object.keys(EMP_FIELD_KEYWORDS).forEach(function (field) {
+    for (var c = 0; c < headerRow.length; c++) {
+      var cellText = headerRow[c];
+      if (cellText == null) continue;
+      if (headerIncludes(cellText, EMP_FIELD_KEYWORDS[field])) {
+        map[field] = c;
+        break;
+      }
+    }
+  });
+  return map;
+}
+
+function parseEmployeeSheet(sheetName, aoa, fileName, issues) {
+  var m = EMP_SHEET_RE.exec(sheetName.trim());
+  if (!m) return [];
+  var branch = normalizeBranchName(m[1]);
+  var month = parseInt(m[2], 10);
+
+  var headerRowIdx = findEmpHeaderRow(aoa);
+  if (headerRowIdx === -1) {
+    issues.push({ severity: "warning", type: "no_header", message: "تعذر إيجاد صف العناوين في ورقة الموظفين \"" + sheetName + "\"", file: fileName, sheet: sheetName });
+    return [];
+  }
+  var headerRow = aoa[headerRowIdx];
+  var colMap = buildEmpColumnMap(headerRow);
+  if (colMap.employeeName === undefined) return [];
+
+  var rows = [];
+  var seenNames = {};
+  for (var r = headerRowIdx + 1; r < aoa.length; r++) {
+    var row = aoa[r];
+    var nameRaw = row[colMap.employeeName];
+    if (nameRaw == null || String(nameRaw).trim() === "") continue;
+    if (isStopRowText(nameRaw)) break;
+    var name = String(nameRaw).trim();
+
+    var rowIssues = [];
+    var idlePctRes = colMap.idlePct !== undefined ? parseNumericCell(row[colMap.idlePct]) : { value: null, status: "missing" };
+    var idleTimeRes = colMap.idleTime !== undefined ? parseDurationToSeconds(row[colMap.idleTime]) : { value: null, status: "missing" };
+    var avgTxnRes = colMap.avgTxnTime !== undefined ? parseDurationToSeconds(row[colMap.avgTxnTime]) : { value: null, status: "missing" };
+    var totalTxnRes = colMap.totalTxnTime !== undefined ? parseDurationToSeconds(row[colMap.totalTxnTime]) : { value: null, status: "missing" };
+    var absenteesRes = colMap.absentees !== undefined ? parseNumericCell(row[colMap.absentees]) : { value: null, status: "missing" };
+    var servedRes = colMap.served !== undefined ? parseNumericCell(row[colMap.served]) : { value: null, status: "missing" };
+    var totalLoginRes = colMap.totalLoginTime !== undefined ? parseDurationToSeconds(row[colMap.totalLoginTime]) : { value: null, status: "missing" };
+    var lastLogoutRes = colMap.lastLogout !== undefined ? parseClockTime(row[colMap.lastLogout]) : { value: null, status: "missing" };
+    var firstLoginRes = colMap.firstLogin !== undefined ? parseClockTime(row[colMap.firstLogin]) : { value: null, status: "missing" };
+
+    var nkey = normalizeArabic(name);
+    if (seenNames[nkey]) {
+      rowIssues.push({ severity: "critical", type: "duplicate_employee_row", message: "تكرار اسم الموظف \"" + name + "\" أكثر من مرة في نفس الكشف (" + sheetName + ")", file: fileName, sheet: sheetName, branch: branch, month: month });
+    }
+    seenNames[nkey] = true;
+
+    [["avgTxnTime", avgTxnRes], ["idleTime", idleTimeRes], ["totalTxnTime", totalTxnRes], ["totalLoginTime", totalLoginRes]].forEach(function (pair) {
+      if (pair[1].status === "error") {
+        rowIssues.push({ severity: "warning", type: "cell_error", message: "تعذر قراءة قيمة زمنية في \"" + pair[0] + "\" للموظف " + name, file: fileName, sheet: sheetName, branch: branch, month: month });
+      }
+    });
+
+    rowIssues.forEach(function (i) { issues.push(i); });
+
+    rows.push({
+      id: fileName + "|" + sheetName + "|" + name,
+      file: fileName, sheet: sheetName,
+      branch: branch, month: month,
+      employeeName: name,
+      idlePct: idlePctRes, idleTime: idleTimeRes,
+      avgTxnTime: avgTxnRes, totalTxnTime: totalTxnRes,
+      absentees: absenteesRes, served: servedRes,
+      totalLoginTime: totalLoginRes,
+      lastLogout: lastLogoutRes, firstLogin: firstLoginRes,
+      issuesCount: rowIssues.length
+    });
+  }
+  return rows;
+}
+
+// ---------- workbook classification & top level parse ----------
+function classifyWorkbook(sheetNames) {
+  var empCount = 0, bizCount = 0;
+  sheetNames.forEach(function (sn) {
+    if (EMP_SHEET_RE.test(sn.trim())) empCount++;
+    if (detectPeriodFromSheetName(sn)) bizCount++;
+  });
+  if (empCount > 0 && empCount >= bizCount) return "employees";
+  if (bizCount > 0) return "business";
+  return "unknown";
+}
+
+// generic record-level duplicate scan: activates only when a sheet actually
+// exposes موظف + رقم مدني + تاريخ columns (not present in the aggregated
+// sample exports, but kept schema-adaptive for a future detailed export).
+var CIVIL_ID_KEYWORDS = ["رقم مدني", "الرقم المدني"];
+var DATE_KEYWORDS = ["تاريخ"];
+var PERSON_KEYWORDS = ["اسم الموظف", "الموظف"];
+
+function excelSerialToDateStr(v) {
+  if (typeof v === "number") {
+    var ms = Math.round((v - 25569) * 86400 * 1000);
+    var d = new Date(ms);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString().slice(0, 10);
+  }
+  var s = String(v).trim();
+  var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[0].slice(0, 10);
+  m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if (m) return m[3] + "-" + m[2].padStart(2, "0") + "-" + m[1].padStart(2, "0");
+  return null;
+}
+
+function scanTransactionLevelDuplicates(sheetName, aoa, fileName, issues, capabilityFlag) {
+  var headerRowIdx = -1;
+  for (var r = 0; r < Math.min(aoa.length, 15); r++) {
+    if (aoa[r].some(function (c) { return headerIncludes(c, PERSON_KEYWORDS); })) { headerRowIdx = r; break; }
+  }
+  if (headerRowIdx === -1) return;
+  var header = aoa[headerRowIdx];
+  var civilCol = -1, dateCol = -1, personCol = -1;
+  header.forEach(function (cell, c) {
+    if (cell == null) return;
+    if (civilCol === -1 && headerIncludes(cell, CIVIL_ID_KEYWORDS)) civilCol = c;
+    if (dateCol === -1 && headerIncludes(cell, DATE_KEYWORDS)) dateCol = c;
+    if (personCol === -1 && headerIncludes(cell, PERSON_KEYWORDS)) personCol = c;
+  });
+  if (civilCol === -1 || dateCol === -1 || personCol === -1) return;
+
+  capabilityFlag.available = true;
+  var seen = {};
+  for (var r2 = headerRowIdx + 1; r2 < aoa.length; r2++) {
+    var row = aoa[r2];
+    var person = row[personCol], civil = row[civilCol], dateRaw = row[dateCol];
+    if (person == null || civil == null || dateRaw == null) continue;
+    var dateStr = excelSerialToDateStr(dateRaw);
+    if (!dateStr) continue;
+    var key = normalizeArabic(person) + "|" + String(civil).trim() + "|" + dateStr;
+    seen[key] = (seen[key] || 0) + 1;
+    if (seen[key] === 2) {
+      issues.push({
+        severity: "critical", type: "duplicate_txn_person_civil_day",
+        message: "تكرار معاملة لنفس الموظف/الرقم المدني في نفس اليوم (" + dateStr + ") - " + sheetName,
+        file: fileName, sheet: sheetName
+      });
+    }
+  }
+}
+
+function parseWorkbook(workbook, fileName, XLSXlib) {
+  var sheetNames = workbook.SheetNames;
+  var kind = classifyWorkbook(sheetNames);
+  var issues = [];
+  var businessRows = [];
+  var employeeRows = [];
+  var capabilityFlag = { available: false };
+
+  sheetNames.forEach(function (sn) {
+    var ws = workbook.Sheets[sn];
+    var aoa = sheetToAOA(ws, XLSXlib);
+    var titleJoined = aoa.slice(0, 3).map(function (r) { return r.join(" "); }).join(" ");
+    if (kind === "employees") {
+      employeeRows = employeeRows.concat(parseEmployeeSheet(sn, aoa, fileName, issues));
+    } else if (kind === "business") {
+      businessRows = businessRows.concat(parseBusinessSheet(sn, aoa, titleJoined, fileName, issues));
+    }
+    scanTransactionLevelDuplicates(sn, aoa, fileName, issues, capabilityFlag);
+  });
+
+  return { kind: kind, businessRows: businessRows, employeeRows: employeeRows, issues: issues, hasTransactionLevelData: capabilityFlag.available };
+}
+
+
+// ================= CONFIG =================
+var TARGETS = { ratioAppointments: 0.30, ratioProactiveField: 0.15, ratioSelfService: 0.10 };
+var RELIABILITY_WEIGHTS = { compliance: 0.4, quality: 0.3, consistency: 0.2, completeness: 0.1 };
+
+var KPI_DEFS = [
+  { key: "transactions", label: "حجم المعاملات", icon: "🧾" },
+  { key: "selfService", label: "الخدمات الذاتية", icon: "🖥️" },
+  { key: "proactive", label: "الاستباقية", icon: "🚀" },
+  { key: "field", label: "الميدانية", icon: "🚗" },
+  { key: "activities", label: "الأنشطة والفعاليات", icon: "📣" },
+  { key: "whatsapp", label: "الواتس آب", icon: "💬" }
+];
+
+var BRANCH_GOV = {
+  "إبراء": "شمال الشرقية", "البريمي": "البريمي", "الرستاق": "جنوب الباطنة", "الرئيسي": "مسقط",
+  "بوشر": "مسقط", "العريمي بوليفارد": "مسقط", "صحار": "شمال الباطنة", "صلالة": "ظفار",
+  "صور": "جنوب الشرقية", "الدقم": "الوسطى", "مسندم": "مسندم", "نزوى": "الداخلية", "عبري": "الظاهرة"
+};
+
+var GOV_LAYOUT = [
+  { name: "مسندم", row: 1, col: 2 },
+  { name: "البريمي", row: 2, col: 1 },
+  { name: "شمال الباطنة", row: 2, col: 2 },
+  { name: "مسقط", row: 2, col: 3, rowSpan: 3 },
+  { name: "الظاهرة", row: 3, col: 1 },
+  { name: "جنوب الباطنة", row: 3, col: 2 },
+  { name: "الداخلية", row: 4, col: 1 },
+  { name: "شمال الشرقية", row: 4, col: 2 },
+  { name: "الوسطى", row: 5, col: 1 },
+  { name: "جنوب الشرقية", row: 5, col: 2 },
+  { name: "ظفار", row: 6, col: 1, colSpan: 2 }
+];
+
+var MONTH_LABELS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+var PERIOD_TYPE_LABELS = { year: "سنة كاملة", half: "نصف سنوي", quarter: "ربع سنوي", month: "شهري" };
+
+// ================= STORE / UI STATE =================
+var STORE = { files: [], businessRows: [], employeeRows: [], issues: [], hasTransactionLevelData: false };
+var UI = { filter: { type: null, key: null, year: null }, selectedBranch: null, selectedGov: null, sortMode: "total", activeCircleTab: "overview" };
+var LS_KEY = "dashboard_data_v1";
+
+// ================= FORMAT HELPERS =================
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
+}
+function fmtInt(n) { if (n == null || isNaN(n)) return "—"; return Math.round(n).toLocaleString("en-US"); }
+function fmtPct(n) { if (n == null || isNaN(n)) return "—"; return (n * 100).toFixed(1) + "%"; }
+function fmtSeconds(sec) {
+  if (sec == null || isNaN(sec)) return "—";
+  sec = Math.round(sec);
+  var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  if (h > 0) return h + "س " + m + "د " + s + "ث";
+  if (m > 0) return m + "د " + s + "ث";
+  return s + "ث";
+}
+function fmtClock(minutesOfDay) {
+  if (minutesOfDay == null) return "—";
+  var h = Math.floor(minutesOfDay / 60), m = minutesOfDay % 60;
+  return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+}
+function metricDisplay(res) {
+  if (!res) return '<span class="na-text">—</span>';
+  if (res.status === "ok") return fmtInt(res.value);
+  if (res.status === "blank") return '<span class="na-text">فارغ</span>';
+  if (res.status === "missing") return '<span class="na-text">غير متاح</span>';
+  return '<span style="color:var(--danger)">خطأ</span>';
+}
+function toast(msg, type) {
+  var host = document.getElementById("toastHost");
+  var el = document.createElement("div");
+  el.className = "toast " + (type || "");
+  el.innerHTML = "<span>" + (type === "ok" ? "✅" : type === "err" ? "⚠️" : type === "warn" ? "❗" : "ℹ️") + "</span><span>" + escapeHtml(msg) + "</span>";
+  host.appendChild(el);
+  setTimeout(function () {
+    el.style.opacity = "0"; el.style.transition = "opacity .3s";
+    setTimeout(function () { el.remove(); }, 300);
+  }, 4500);
+}
+
+// ================= PERIOD / AGGREGATION =================
+function getAvailablePeriods() {
+  var seen = {}; var list = [];
+  STORE.businessRows.forEach(function (r) {
+    var k = r.period.type + ":" + r.period.key + ":" + (r.year || "");
+    if (!seen[k]) { seen[k] = true; list.push({ type: r.period.type, key: r.period.key, year: r.year, label: r.period.label }); }
+  });
+  var byYearHalves = {};
+  list.filter(function (p) { return p.type === "half"; }).forEach(function (p) {
+    byYearHalves[p.year] = byYearHalves[p.year] || {};
+    byYearHalves[p.year][p.key] = true;
+  });
+  Object.keys(byYearHalves).forEach(function (y) {
+    if (byYearHalves[y][1] && byYearHalves[y][2]) {
+      list.push({ type: "year", key: parseInt(y, 10), year: parseInt(y, 10), label: "السنة الكاملة" });
+    }
+  });
+  var typeOrder = { year: 0, half: 1, quarter: 2, month: 3 };
+  list.sort(function (a, b) { return typeOrder[a.type] - typeOrder[b.type] || a.key - b.key; });
+  return list;
+}
+
+function combineMetric(a, b) {
+  if (!a) return b; if (!b) return a;
+  if (a.status === "error" || b.status === "error") return { value: null, status: "error" };
+  if (a.status === "ok" && b.status === "ok") return { value: a.value + b.value, status: "ok" };
+  if (a.status === "ok") return { value: a.value, status: "ok" };
+  if (b.status === "ok") return { value: b.value, status: "ok" };
+  return { value: null, status: "blank" };
+}
+
+function getRowsForPeriod(type, key, year) {
+  if (!type) return [];
+  if (type === "year") {
+    var h1 = STORE.businessRows.filter(function (r) { return r.period.type === "half" && r.period.key === 1 && r.year === year; });
+    var h2 = STORE.businessRows.filter(function (r) { return r.period.type === "half" && r.period.key === 2 && r.year === year; });
+    var branches = {};
+    h1.forEach(function (r) { branches[r.branch] = branches[r.branch] || {}; branches[r.branch].h1 = r; });
+    h2.forEach(function (r) { branches[r.branch] = branches[r.branch] || {}; branches[r.branch].h2 = r; });
+    var out = [];
+    var metricKeys = ["transactions", "activities", "field", "proactive", "selfService", "appointments", "whatsapp", "qr", "totalCompleted"];
+    Object.keys(branches).forEach(function (b) {
+      var r1 = branches[b].h1, r2 = branches[b].h2;
+      var metrics = {}, ratios = {};
+      metricKeys.forEach(function (k) { metrics[k] = combineMetric(r1 && r1.metrics[k], r2 && r2.metrics[k]); });
+      ["ratioAppointments", "ratioProactiveField", "ratioSelfService"].forEach(function (k) {
+        var w1 = r1 && r1.metrics.totalCompleted.status === "ok" ? r1.metrics.totalCompleted.value : 0;
+        var w2 = r2 && r2.metrics.totalCompleted.status === "ok" ? r2.metrics.totalCompleted.value : 0;
+        var v1 = r1 && r1.ratios[k] && r1.ratios[k].status === "ok" && r1.ratios[k].value <= 1.2 ? r1.ratios[k].value : null;
+        var v2 = r2 && r2.ratios[k] && r2.ratios[k].status === "ok" && r2.ratios[k].value <= 1.2 ? r2.ratios[k].value : null;
+        if (v1 != null && v2 != null && (w1 + w2) > 0) ratios[k] = { value: (v1 * w1 + v2 * w2) / (w1 + w2), status: "ok" };
+        else if (v1 != null) ratios[k] = { value: v1, status: "ok" };
+        else if (v2 != null) ratios[k] = { value: v2, status: "ok" };
+        else ratios[k] = { value: null, status: "blank" };
+      });
+      out.push({ branch: b, period: { type: "year", key: year, label: "السنة الكاملة" }, year: year, metrics: metrics, ratios: ratios });
+    });
+    return out;
+  }
+  return STORE.businessRows.filter(function (r) {
+    return r.period.type === type && r.period.key === key && (year == null || r.year == null || r.year === year);
+  });
+}
+
+function getPreviousPeriodKey(type, key) {
+  if (type === "month" || type === "quarter" || type === "half") return key > 1 ? key - 1 : null;
+  return null;
+}
+
+function monthsInPeriod(type, key) {
+  if (type === "month") return [key];
+  if (type === "quarter") return [(key - 1) * 3 + 1, (key - 1) * 3 + 2, (key - 1) * 3 + 3];
+  if (type === "half") return key === 1 ? [1, 2, 3, 4, 5, 6] : [7, 8, 9, 10, 11, 12];
+  if (type === "year") return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  return [];
+}
+
+function aggregateKPIs(rows) {
+  var out = {};
+  KPI_DEFS.forEach(function (def) {
+    var acc = { value: null, status: "blank" };
+    rows.forEach(function (r) { acc = combineMetric(acc, r.metrics[def.key]); });
+    out[def.key] = acc;
+  });
+  return out;
+}
+
+function getAllKnownBranches() {
+  var set = {};
+  STORE.businessRows.forEach(function (r) { set[r.branch] = true; });
+  STORE.employeeRows.forEach(function (r) { set[r.branch] = true; });
+  return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "ar"); });
+}
+
+function periodDisplayLabel(filter) {
+  if (!filter.type) return "";
+  if (filter.type === "month") return MONTH_LABELS[filter.key - 1] + " " + (filter.year || "");
+  if (filter.type === "year") return "السنة الكاملة " + (filter.year || "");
+  var periods = getAvailablePeriods();
+  var p = periods.filter(function (pp) { return pp.type === filter.type && pp.key === filter.key && pp.year === filter.year; })[0];
+  return p ? (p.label + " " + (filter.year || "")) : "";
+}
+
+// ================= RELIABILITY ENGINE =================
+function getIssuesForRow(row) {
+  if (row.period.type === "year") {
+    return STORE.issues.filter(function (i) {
+      return i.branch === row.branch && i.period && i.period.type === "half" && (i.year == null || i.year === row.year);
+    });
+  }
+  return STORE.issues.filter(function (i) {
+    return i.branch === row.branch && i.period && i.period.type === row.period.type && i.period.key === row.period.key && (i.year == null || row.year == null || i.year === row.year);
+  });
+}
+
+function computeComplianceScore(row) {
+  var parts = [];
+  ["ratioAppointments", "ratioProactiveField", "ratioSelfService"].forEach(function (k) {
+    var r = row.ratios[k];
+    if (r && r.status === "ok" && r.value >= -0.001 && r.value <= 1.2) {
+      parts.push(Math.min(1, Math.max(0, r.value) / TARGETS[k]) * 100);
+    }
+  });
+  if (parts.length === 0) return null;
+  return parts.reduce(function (a, b) { return a + b; }, 0) / parts.length;
+}
+
+function computeQualityScore(row) {
+  var issues = getIssuesForRow(row);
+  var penalty = 0;
+  issues.forEach(function (i) { penalty += i.severity === "critical" ? 20 : (i.severity === "warning" ? 8 : 3); });
+  return Math.max(0, 100 - penalty);
+}
+
+function computeCompletenessScore(row) {
+  var metricKeys = ["transactions", "activities", "field", "proactive", "selfService", "appointments", "whatsapp", "qr", "totalCompleted"];
+  var ratioKeys = ["ratioAppointments", "ratioProactiveField", "ratioSelfService"];
+  var total = metricKeys.length + ratioKeys.length;
+  var ok = 0;
+  metricKeys.forEach(function (k) { if (row.metrics[k] && row.metrics[k].status === "ok") ok++; });
+  ratioKeys.forEach(function (k) { if (row.ratios[k] && row.ratios[k].status === "ok") ok++; });
+  return (ok / total) * 100;
+}
+
+function computeConsistencyScore(branch) {
+  var types = ["month", "quarter", "half"];
+  for (var t = 0; t < types.length; t++) {
+    var rows = STORE.businessRows.filter(function (r) { return r.branch === branch && r.period.type === types[t] && r.metrics.totalCompleted.status === "ok"; });
+    if (rows.length >= 2) {
+      var vals = rows.map(function (r) { return r.metrics.totalCompleted.value; });
+      var mean = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
+      if (mean <= 0) return { score: 100, note: "غير كافٍ" };
+      var variance = vals.reduce(function (a, b) { return a + Math.pow(b - mean, 2); }, 0) / vals.length;
+      var cv = Math.sqrt(variance) / mean;
+      return { score: Math.max(0, 100 - Math.min(100, cv * 150)), note: null, n: vals.length };
+    }
+  }
+  return { score: 100, note: "بيانات فترة واحدة فقط - غير كافية لحساب الاتساق" };
+}
+
+function computeReliabilityScoreOnly(row) {
+  var compliance = computeComplianceScore(row);
+  var quality = computeQualityScore(row);
+  var completeness = computeCompletenessScore(row);
+  var consistency = computeConsistencyScore(row.branch);
+  var complianceForCalc = compliance == null ? 50 : compliance;
+  var final = RELIABILITY_WEIGHTS.compliance * complianceForCalc + RELIABILITY_WEIGHTS.quality * quality +
+    RELIABILITY_WEIGHTS.consistency * consistency.score + RELIABILITY_WEIGHTS.completeness * completeness;
+  return Math.round(Math.max(0, Math.min(100, final)));
+}
+
+function computeReliability(row) {
+  var compliance = computeComplianceScore(row);
+  var quality = computeQualityScore(row);
+  var completeness = computeCompletenessScore(row);
+  var consistency = computeConsistencyScore(row.branch);
+  var complianceForCalc = compliance == null ? 50 : compliance;
+  var final = RELIABILITY_WEIGHTS.compliance * complianceForCalc + RELIABILITY_WEIGHTS.quality * quality +
+    RELIABILITY_WEIGHTS.consistency * consistency.score + RELIABILITY_WEIGHTS.completeness * completeness;
+  final = Math.round(Math.max(0, Math.min(100, final)));
+
+  var trend = null;
+  var prevKey = getPreviousPeriodKey(row.period.type, row.period.key);
+  if (prevKey != null) {
+    var prevRow = getRowsForPeriod(row.period.type, prevKey, row.year).filter(function (r) { return r.branch === row.branch; })[0];
+    if (prevRow) trend = final - computeReliabilityScoreOnly(prevRow);
+  }
+  return { score: final, compliance: compliance, complianceAvailable: compliance != null, quality: quality, completeness: completeness, consistency: consistency, trend: trend };
+}
+
+function reliabilityClass(score) { return score >= 80 ? "rel-green" : (score >= 60 ? "rel-amber" : "rel-red"); }
+function trendArrow(trend) {
+  if (trend == null) return '<span class="arrow">—</span>';
+  if (trend >= 2) return '<span class="arrow">▲</span>';
+  if (trend <= -2) return '<span class="arrow">▼</span>';
+  return '<span class="arrow">▬</span>';
+}
+
+// ================= DUPLICATE / RUSHED-ENTRY / QUALITY ALERTS =================
+function computeRushedPatterns() {
+  var map = {};
+  STORE.employeeRows.forEach(function (r) {
+    if (r.avgTxnTime.status === "ok" && r.avgTxnTime.value < 60 && r.served.status === "ok" && r.served.value > 0) {
+      var key = r.branch + "|" + normalizeArabic(r.employeeName);
+      map[key] = map[key] || { branch: r.branch, name: r.employeeName, months: [] };
+      map[key].months.push({ month: r.month, avg: r.avgTxnTime.value, served: r.served.value });
+    }
+  });
+  return Object.keys(map).map(function (k) { return map[k]; });
+}
+
+function buildAlertLists() {
+  var dup = [], qual = [];
+  STORE.issues.forEach(function (i) {
+    var item = { severity: i.severity, message: i.message, ctx: [i.file, i.sheet].filter(Boolean).join(" · ") };
+    if (["duplicate_branch_row", "duplicate_employee_row", "duplicate_txn_person_civil_day"].indexOf(i.type) !== -1) dup.push(item);
+    else qual.push(item);
+  });
+  computeRushedPatterns().forEach(function (p) {
+    var count = p.months.length;
+    var sev = count >= 3 ? "critical" : (count === 2 ? "warning" : "info");
+    var monthsTxt = p.months.map(function (m) { return MONTH_LABELS[m.month - 1] + " (" + m.avg + "ث)"; }).join("، ");
+    dup.push({ severity: sev, message: "نمط إدخال متسرّع للموظف " + p.name + " - " + p.branch + " (" + count + " فترة/فترات: " + monthsTxt + ")", ctx: "متوسط زمن معاملة أقل من 60 ثانية" });
+  });
+  if (!STORE.hasTransactionLevelData && (STORE.businessRows.length > 0 || STORE.employeeRows.length > 0)) {
+    dup.unshift({ severity: "info", message: 'كشف تكرار (موظف + رقم مدني + نفس اليوم) غير متاح — الملفات المرفوعة لا تحتوي أعمدة "رقم مدني" و"تاريخ المعاملة" على مستوى السجل. ارفع ملف معاملات تفصيلي لتفعيل هذا الفحص.', ctx: "قيد الإتاحة عند توفر البيانات" });
+    dup.push({ severity: "info", message: "فحص التسجيل المتأخر (أكثر من 30 يومًا) غير متاح لنفس السبب أعلاه.", ctx: "قيد الإتاحة عند توفر البيانات" });
+  }
+  var sevOrder = { critical: 0, warning: 1, info: 2 };
+  dup.sort(function (a, b) { return sevOrder[a.severity] - sevOrder[b.severity]; });
+  qual.sort(function (a, b) { return sevOrder[a.severity] - sevOrder[b.severity]; });
+  return { dup: dup, qual: qual };
+}
+
+// ================= PERSISTENCE =================
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      files: STORE.files, businessRows: STORE.businessRows, employeeRows: STORE.employeeRows,
+      issues: STORE.issues, hasTransactionLevelData: STORE.hasTransactionLevelData
+    }));
+  } catch (e) { /* quota or unavailable - non critical, uploads still work this session */ }
+}
+function loadFromLocalStorage() {
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    var data = JSON.parse(raw);
+    STORE.files = data.files || [];
+    STORE.businessRows = data.businessRows || [];
+    STORE.employeeRows = data.employeeRows || [];
+    STORE.issues = data.issues || [];
+    STORE.hasTransactionLevelData = !!data.hasTransactionLevelData;
+    return STORE.files.length > 0;
+  } catch (e) { return false; }
+}
+
+// ================= FILE HANDLING =================
+function readFileAsArrayBuffer(file) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function () { resolve(reader.result); };
+    reader.onerror = function () { reject(reader.error); };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function handleFiles(fileList) {
+  var files = Array.prototype.slice.call(fileList);
+  if (files.length === 0) return;
+  var promises = files.map(function (file) {
+    return readFileAsArrayBuffer(file).then(function (buf) {
+      try {
+        var data = new Uint8Array(buf);
+        var wb = XLSX.read(data, { type: "array" });
+        var res = parseWorkbook(wb, file.name, XLSX);
+        if (res.kind === "unknown") {
+          toast('تعذر التعرف على نوع الملف "' + file.name + '" — تأكد أنه يحتوي أوراق حجم الأعمال أو أداء الموظفين.', "err");
+          return;
+        }
+        STORE.businessRows = STORE.businessRows.filter(function (r) { return r.file !== file.name; });
+        STORE.employeeRows = STORE.employeeRows.filter(function (r) { return r.file !== file.name; });
+        STORE.issues = STORE.issues.filter(function (i) { return i.file !== file.name; });
+        STORE.files = STORE.files.filter(function (f) { return f.name !== file.name; });
+
+        STORE.businessRows = STORE.businessRows.concat(res.businessRows);
+        STORE.employeeRows = STORE.employeeRows.concat(res.employeeRows);
+        STORE.issues = STORE.issues.concat(res.issues);
+        STORE.hasTransactionLevelData = STORE.hasTransactionLevelData || res.hasTransactionLevelData;
+        STORE.files.push({
+          name: file.name, size: file.size, kind: res.kind,
+          rows: (res.kind === "business" ? res.businessRows.length : res.employeeRows.length),
+          issues: res.issues.length
+        });
+
+        var msg = 'تم تحميل "' + file.name + '" بنجاح — ' + (res.kind === "business" ? res.businessRows.length + " صف حجم أعمال" : res.employeeRows.length + " سجل موظف");
+        toast(res.issues.length > 0 ? (msg + " (مع " + res.issues.length + " ملاحظة جودة بيانات)") : msg, res.issues.length > 0 ? "warn" : "ok");
+      } catch (err) {
+        console.error(err);
+        toast('خطأ أثناء قراءة الملف "' + file.name + '": ' + (err && err.message ? err.message : "تنسيق غير صالح"), "err");
+      }
+    });
+  });
+  Promise.all(promises).then(function () { saveToLocalStorage(); recomputeAll(); });
+}
+
+// ================= RENDER: file list & period selectors =================
+function renderFileList() {
+  var host = document.getElementById("fileList");
+  if (STORE.files.length === 0) { host.innerHTML = ""; return; }
+  host.innerHTML = STORE.files.map(function (f) {
+    var kindLabel = f.kind === "business" ? "حجم أعمال" : (f.kind === "employees" ? "أداء موظفين" : "غير معروف");
+    var kindClass = f.kind === "business" ? "kind-business" : (f.kind === "employees" ? "kind-employees" : "kind-unknown");
+    return '<div class="file-chip"><div><div class="name">' + escapeHtml(f.name) + '</div>' +
+      '<div class="meta">' + f.rows + " صف" + (f.issues > 0 ? (" · " + f.issues + " ملاحظة") : "") + '</div></div>' +
+      '<span class="kind-tag ' + kindClass + '">' + kindLabel + "</span>" +
+      '<button data-file="' + escapeHtml(f.name) + '" class="remove-file-btn" title="إزالة الملف">✕</button></div>';
+  }).join("") + '<button class="btn btn-outline btn-sm" id="clearAllBtn" style="margin-top:8px">مسح كل البيانات</button>';
+
+  Array.prototype.forEach.call(host.querySelectorAll(".remove-file-btn"), function (btn) {
+    btn.addEventListener("click", function () {
+      var name = btn.getAttribute("data-file");
+      STORE.businessRows = STORE.businessRows.filter(function (r) { return r.file !== name; });
+      STORE.employeeRows = STORE.employeeRows.filter(function (r) { return r.file !== name; });
+      STORE.issues = STORE.issues.filter(function (i) { return i.file !== name; });
+      STORE.files = STORE.files.filter(function (f) { return f.name !== name; });
+      saveToLocalStorage(); recomputeAll();
+      toast('تمت إزالة الملف "' + name + '"', "ok");
+    });
+  });
+  var clearBtn = document.getElementById("clearAllBtn");
+  if (clearBtn) clearBtn.addEventListener("click", function () {
+    STORE.businessRows = []; STORE.employeeRows = []; STORE.issues = []; STORE.files = []; STORE.hasTransactionLevelData = false;
+    try { localStorage.removeItem(LS_KEY); } catch (e) {}
+    UI.filter = { type: null, key: null, year: null }; UI.selectedBranch = null;
+    recomputeAll();
+    toast("تم مسح جميع البيانات", "ok");
+  });
+}
+
+var periodTypeSel = document.getElementById("periodType");
+var periodValueSel = document.getElementById("periodValue");
+
+function renderPeriodSelectors() {
+  var periods = getAvailablePeriods();
+  var types = [];
+  ["year", "half", "quarter", "month"].forEach(function (t) { if (periods.some(function (p) { return p.type === t; })) types.push(t); });
+  if (types.length === 0) {
+    periodTypeSel.innerHTML = '<option value="">لا توجد بيانات</option>';
+    periodValueSel.innerHTML = "";
+    periodValueSel.disabled = true; periodTypeSel.disabled = true;
+    UI.filter = { type: null, key: null, year: null };
+    return;
+  }
+  periodTypeSel.disabled = false; periodValueSel.disabled = false;
+  periodTypeSel.innerHTML = types.map(function (t) { return '<option value="' + t + '">' + PERIOD_TYPE_LABELS[t] + "</option>"; }).join("");
+  if (!UI.filter.type || types.indexOf(UI.filter.type) === -1) UI.filter.type = types[0];
+  periodTypeSel.value = UI.filter.type;
+
+  var valuesForType = periods.filter(function (p) { return p.type === UI.filter.type; }).sort(function (a, b) { return b.key - a.key; });
+  periodValueSel.innerHTML = valuesForType.map(function (p) {
+    var label = p.type === "month" ? (MONTH_LABELS[p.key - 1] + (p.year ? (" " + p.year) : "")) :
+      p.type === "year" ? ("السنة الكاملة " + p.year) : (p.label + (p.year ? (" " + p.year) : ""));
+    return '<option value="' + p.key + "|" + (p.year || "") + '">' + label + "</option>";
+  }).join("");
+
+  var currentMatch = valuesForType.some(function (p) { return p.key === UI.filter.key && p.year === UI.filter.year; });
+  if (!currentMatch && valuesForType.length > 0) { UI.filter.key = valuesForType[0].key; UI.filter.year = valuesForType[0].year; }
+  periodValueSel.value = UI.filter.key + "|" + (UI.filter.year || "");
+}
+
+periodTypeSel.addEventListener("change", function () {
+  UI.filter.type = periodTypeSel.value; UI.filter.key = null; UI.filter.year = null;
+  renderPeriodSelectors(); renderAll();
+});
+periodValueSel.addEventListener("change", function () {
+  var parts = periodValueSel.value.split("|");
+  UI.filter.key = parseInt(parts[0], 10); UI.filter.year = parts[1] ? parseInt(parts[1], 10) : null;
+  renderAll();
+});
+
+// ================= RENDER: KPI bar =================
+function renderKPIBar() {
+  var host = document.getElementById("kpiHost");
+  var label = document.getElementById("kpiPeriodLabel");
+  if (STORE.businessRows.length === 0) {
+    host.innerHTML = '<div class="empty-state"><span class="ic">📭</span>لا توجد بيانات حجم أعمال بعد — الرجاء رفع ملف حجم الأعمال (نصفي/ربعي/شهري) لعرض المؤشرات.</div>';
+    label.textContent = ""; return;
+  }
+  var rows = getRowsForPeriod(UI.filter.type, UI.filter.key, UI.filter.year);
+  if (rows.length === 0) { host.innerHTML = '<div class="empty-state"><span class="ic">📭</span>لا توجد بيانات لهذه الفترة.</div>'; label.textContent = ""; return; }
+  label.textContent = "(" + periodDisplayLabel(UI.filter) + ")";
+  var kpis = aggregateKPIs(rows);
+  var prevKey = getPreviousPeriodKey(UI.filter.type, UI.filter.key);
+  var prevKpis = null;
+  if (prevKey != null) {
+    var prevRows = getRowsForPeriod(UI.filter.type, prevKey, UI.filter.year);
+    if (prevRows.length > 0) prevKpis = aggregateKPIs(prevRows);
+  }
+  host.innerHTML = '<div class="kpi-grid">' + KPI_DEFS.map(function (def) {
+    var res = kpis[def.key];
+    var valueHtml = res.status === "ok" ? fmtInt(res.value) : ('<span class="kna">' + (res.status === "blank" ? "لا توجد بيانات" : "غير متاح") + "</span>");
+    var deltaHtml = "";
+    if (res.status === "ok" && prevKpis && prevKpis[def.key].status === "ok" && prevKpis[def.key].value > 0) {
+      var delta = ((res.value - prevKpis[def.key].value) / prevKpis[def.key].value) * 100;
+      var cls = delta > 1 ? "up" : (delta < -1 ? "down" : "flat");
+      var arrow = delta > 1 ? "▲" : (delta < -1 ? "▼" : "▬");
+      deltaHtml = '<div class="kdelta ' + cls + '">' + arrow + " " + Math.abs(delta).toFixed(1) + "% عن الفترة السابقة</div>";
+    }
+    return '<div class="kpi-card"><div class="kicon">' + def.icon + '</div><div class="klabel">' + def.label + '</div><div class="kvalue">' + valueHtml + "</div>" + deltaHtml + "</div>";
+  }).join("") + "</div>";
+}
+
+// ================= RENDER: map =================
+function colorForIntensity(t) {
+  function hexToRgb(h) { h = h.replace("#", ""); return [parseInt(h.substr(0, 2), 16), parseInt(h.substr(2, 2), 16), parseInt(h.substr(4, 2), 16)]; }
+  function blend(c1, c2, f) { return c1.map(function (v, i) { return Math.round(v + (c2[i] - v) * f); }); }
+  var light = hexToRgb("cfe3d9"), dark = hexToRgb("173F33");
+  return "rgb(" + blend(light, dark, t).join(",") + ")";
+}
+
+function renderMap() {
+  var host = document.getElementById("mapHost");
+  if (STORE.businessRows.length === 0 && STORE.employeeRows.length === 0) {
+    host.innerHTML = '<div class="empty-state"><span class="ic">🗺️</span>ارفع بيانات الدوائر لعرض الخارطة.</div>'; return;
+  }
+  var rows = getRowsForPeriod(UI.filter.type, UI.filter.key, UI.filter.year);
+  var byBranch = {};
+  rows.forEach(function (r) { byBranch[r.branch] = r; });
+
+  var govTotals = {};
+  Object.keys(BRANCH_GOV).forEach(function (branch) {
+    var gov = BRANCH_GOV[branch];
+    govTotals[gov] = govTotals[gov] || { total: 0, hasData: false };
+    var r = byBranch[branch];
+    if (r && r.metrics.totalCompleted.status === "ok") { govTotals[gov].total += r.metrics.totalCompleted.value; govTotals[gov].hasData = true; }
+  });
+  var totals = Object.keys(govTotals).map(function (g) { return govTotals[g].total; }).filter(function (v) { return v > 0; });
+  var maxTotal = totals.length ? Math.max.apply(null, totals) : 0;
+
+  var tilesHtml = GOV_LAYOUT.map(function (g) {
+    var data = govTotals[g.name] || { total: 0, hasData: false };
+    var t = maxTotal > 0 ? data.total / maxTotal : 0;
+    var bg = data.hasData ? colorForIntensity(t) : "#cfcac0";
+    var style = "grid-row:" + g.row + (g.rowSpan ? (" / span " + g.rowSpan) : "") + ";grid-column:" + g.col + (g.colSpan ? (" / span " + g.colSpan) : "") + ";background:" + bg + ";";
+    var selected = UI.selectedGov === g.name ? " selected" : "";
+    return '<div class="gov-tile' + selected + '" data-gov="' + escapeHtml(g.name) + '" style="' + style + '"><div>' + g.name + "</div>" +
+      (data.hasData ? ('<div class="g-val">' + fmtInt(data.total) + "</div>") : '<div class="g-val">لا بيانات</div>') + "</div>";
+  }).join("");
+
+  host.innerHTML = '<div class="gov-grid">' + tilesHtml + '</div><div class="map-legend">' +
+    '<div class="lg-row"><span class="lg-swatch" style="background:' + colorForIntensity(0.15) + '"></span> إجمالي أعمال منخفض</div>' +
+    '<div class="lg-row"><span class="lg-swatch" style="background:' + colorForIntensity(0.55) + '"></span> إجمالي أعمال متوسط</div>' +
+    '<div class="lg-row"><span class="lg-swatch" style="background:' + colorForIntensity(0.95) + '"></span> إجمالي أعمال مرتفع</div>' +
+    '<div class="lg-row"><span class="lg-swatch" style="background:#cfcac0"></span> لا توجد بيانات</div>' +
+    '<div class="map-note">اضغط على أي محافظة لعرض دوائرها في قسم المقارنة أدناه.</div></div>';
+
+  Array.prototype.forEach.call(host.querySelectorAll(".gov-tile"), function (tile) {
+    tile.addEventListener("click", function () {
+      var gov = tile.getAttribute("data-gov");
+      UI.selectedGov = UI.selectedGov === gov ? null : gov;
+      renderMap(); renderCompare();
+      document.getElementById("compareHost").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
+// ================= RENDER: comparison cards =================
+function buildReliabilityTooltip(rel) {
+  return [
+    "<b>موثوقية الدائرة: " + rel.score + "/100</b>",
+    "الالتزام بالأهداف (40%): " + (rel.complianceAvailable ? Math.round(rel.compliance) + "/100" : "غير متاح"),
+    "جودة البيانات (30%): " + Math.round(rel.quality) + "/100",
+    "اتساق الأداء (20%): " + Math.round(rel.consistency.score) + "/100" + (rel.consistency.note ? (" — " + rel.consistency.note) : ""),
+    "اكتمال البيانات (10%): " + Math.round(rel.completeness) + "/100"
+  ].join("<br>");
+}
+function relBadgeHtml(rel) {
+  var cls = reliabilityClass(rel.score);
+  return '<span class="tip" tabindex="0"><span class="rel-badge ' + cls + '">' + rel.score + " " + trendArrow(rel.trend) + '</span><span class="tip-bubble">' + buildReliabilityTooltip(rel) + "</span></span>";
+}
+
+function renderCompare() {
+  var host = document.getElementById("compareHost");
+  var allBranches = getAllKnownBranches();
+  if (allBranches.length === 0) { host.innerHTML = '<div class="empty-state"><span class="ic">⚖️</span>ارفع بيانات لعرض مقارنة الدوائر.</div>'; return; }
+  var rows = getRowsForPeriod(UI.filter.type, UI.filter.key, UI.filter.year);
+  var byBranch = {};
+  rows.forEach(function (r) { byBranch[r.branch] = r; });
+
+  var cards = allBranches.filter(function (b) { return !UI.selectedGov || BRANCH_GOV[b] === UI.selectedGov; }).map(function (branch) {
+    var row = byBranch[branch];
+    return { branch: branch, row: row, rel: row ? computeReliability(row) : null };
+  });
+
+  cards.sort(function (a, b) {
+    if (UI.sortMode === "name") return a.branch.localeCompare(b.branch, "ar");
+    if (UI.sortMode === "reliability") return (b.rel ? b.rel.score : -1) - (a.rel ? a.rel.score : -1);
+    var ta = a.row && a.row.metrics.totalCompleted.status === "ok" ? a.row.metrics.totalCompleted.value : -1;
+    var tb = b.row && b.row.metrics.totalCompleted.status === "ok" ? b.row.metrics.totalCompleted.value : -1;
+    return tb - ta;
+  });
+
+  host.innerHTML = '<div class="branch-grid">' + cards.map(function (c) {
+    if (!c.row) {
+      return '<div class="branch-card" data-branch="' + escapeHtml(c.branch) + '"><div class="bc-top"><div><h3>' + c.branch + '</h3><div class="gov-label">' + (BRANCH_GOV[c.branch] || "") + '</div></div></div>' +
+        '<div class="empty-state" style="padding:14px;margin-top:10px">لا توجد بيانات حجم أعمال لهذه الفترة</div></div>';
+    }
+    var maxVal = Math.max.apply(null, KPI_DEFS.map(function (d) { var m = c.row.metrics[d.key]; return m.status === "ok" ? m.value : 0; }).concat([1]));
+    var barsHtml = KPI_DEFS.map(function (d) {
+      var m = c.row.metrics[d.key];
+      var pct = m.status === "ok" ? Math.round((m.value / maxVal) * 100) : 0;
+      return '<div class="mini-bar-row"><span>' + d.label + '</span><span class="mini-bar-track" style="direction:ltr"><span class="mini-bar-fill" style="width:' + pct + '%"></span></span><span>' + metricDisplay(m) + "</span></div>";
+    }).join("");
+    var relHtml = c.rel ? relBadgeHtml(c.rel) : '<span class="rel-badge rel-amber">—</span>';
+    return '<div class="branch-card" data-branch="' + escapeHtml(c.branch) + '"><div class="bc-top"><div><h3>' + c.branch + '</h3><div class="gov-label">' + (BRANCH_GOV[c.branch] || "") + "</div></div>" + relHtml + '</div>' +
+      '<div class="mini-bars">' + barsHtml + '</div><div class="bc-total">إجمالي الأعمال المنجزة: ' + metricDisplay(c.row.metrics.totalCompleted) + "</div></div>";
+  }).join("") + "</div>";
+
+  Array.prototype.forEach.call(host.querySelectorAll(".branch-card"), function (card) {
+    card.addEventListener("click", function () {
+      UI.selectedBranch = card.getAttribute("data-branch");
+      document.getElementById("circleSelect").value = UI.selectedBranch;
+      renderCircleDetail();
+      document.getElementById("circleDetailHost").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+document.getElementById("sortSelect").addEventListener("change", function (e) { UI.sortMode = e.target.value; renderCompare(); });
+
+// ================= RENDER: alerts =================
+function alertItemHtml(a) {
+  return '<div class="alert-item sev-' + a.severity + '"><span class="alert-dot"></span><div class="a-msg">' + escapeHtml(a.message) + (a.ctx ? ('<span class="a-ctx">' + escapeHtml(a.ctx) + "</span>") : "") + "</div></div>";
+}
+function renderAlerts() {
+  var lists = buildAlertLists();
+  document.getElementById("dupCount").textContent = lists.dup.filter(function (a) { return a.severity !== "info"; }).length;
+  document.getElementById("qualCount").textContent = lists.qual.length;
+  document.getElementById("dupAlerts").innerHTML = lists.dup.length ? lists.dup.map(alertItemHtml).join("") : '<div class="alert-empty">لا توجد تنبيهات تكرار حاليًا.</div>';
+  document.getElementById("qualAlerts").innerHTML = lists.qual.length ? lists.qual.map(alertItemHtml).join("") : '<div class="alert-empty">لا توجد ملاحظات جودة بيانات حاليًا.</div>';
+}
+
+// ================= CANVAS CHARTS =================
+function setupCanvasHiDPI(canvas, cssHeight) {
+  var dpr = window.devicePixelRatio || 1;
+  var rect = canvas.getBoundingClientRect();
+  var w = rect.width || (canvas.parentElement && canvas.parentElement.clientWidth) || 300;
+  canvas.width = w * dpr; canvas.height = cssHeight * dpr;
+  canvas.style.height = cssHeight + "px";
+  var ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx: ctx, w: w, h: cssHeight };
+}
+
+function drawLineChart(canvas, labels, values) {
+  var setup = setupCanvasHiDPI(canvas, 200);
+  var ctx = setup.ctx, w = setup.w, h = setup.h;
+  var pad = { top: 14, right: 14, bottom: 26, left: 14 };
+  var cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
+  ctx.clearRect(0, 0, w, h);
+  var max = Math.max.apply(null, values) * 1.15 || 1;
+  var min = Math.min(0, Math.min.apply(null, values));
+  var stepX = cw / (values.length - 1 || 1);
+  ctx.strokeStyle = "#e5ddc9"; ctx.lineWidth = 1;
+  for (var g = 0; g <= 3; g++) {
+    var y = pad.top + (ch / 3) * g;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
+  }
+  var pts = values.map(function (v, i) { return [pad.left + stepX * i, pad.top + ch - ((v - min) / ((max - min) || 1)) * ch]; });
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pad.top + ch);
+  pts.forEach(function (p) { ctx.lineTo(p[0], p[1]); });
+  ctx.lineTo(pts[pts.length - 1][0], pad.top + ch); ctx.closePath();
+  ctx.fillStyle = "rgba(185,144,46,0.18)"; ctx.fill();
+  ctx.beginPath();
+  pts.forEach(function (p, i) { if (i === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]); });
+  ctx.strokeStyle = "#173F33"; ctx.lineWidth = 2.4; ctx.lineJoin = "round"; ctx.stroke();
+  pts.forEach(function (p) { ctx.beginPath(); ctx.arc(p[0], p[1], 3.4, 0, Math.PI * 2); ctx.fillStyle = "#B9902E"; ctx.fill(); });
+  ctx.fillStyle = "#6b7568"; ctx.font = "11px Tajawal, sans-serif"; ctx.textAlign = "center";
+  pts.forEach(function (p, i) { ctx.fillText(labels[i], p[0], h - 6); });
+}
+
+function wrapText(ctx, text, x, y, maxWidth) {
+  var words = String(text).split(" "); var line = ""; var lines = [];
+  words.forEach(function (word) {
+    var test = line ? line + " " + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = word; } else line = test;
+  });
+  if (line) lines.push(line);
+  lines.slice(0, 2).forEach(function (l, i) { ctx.fillText(l, x, y + i * 11); });
+}
+
+function drawBarChart(canvas, labels, values, colors) {
+  var setup = setupCanvasHiDPI(canvas, 240);
+  var ctx = setup.ctx, w = setup.w, h = setup.h;
+  var pad = { top: 14, right: 10, bottom: 50, left: 10 };
+  var cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
+  ctx.clearRect(0, 0, w, h);
+  var max = Math.max.apply(null, values) * 1.15 || 1;
+  var n = values.length; var slot = cw / n; var barW = Math.min(48, slot * 0.55);
+  ctx.textAlign = "center";
+  values.forEach(function (v, i) {
+    var barH = (v / max) * ch;
+    var x = pad.left + slot * i + slot / 2 - barW / 2;
+    var y = pad.top + ch - barH;
+    ctx.fillStyle = colors[i];
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, barW, barH, [6, 6, 0, 0]); else ctx.rect(x, y, barW, barH);
+    ctx.fill();
+    ctx.fillStyle = "#20261f"; ctx.font = "11px Tajawal, sans-serif";
+    ctx.fillText(fmtInt(v), x + barW / 2, y - 6);
+    ctx.fillStyle = "#6b7568"; ctx.font = "10px Tajawal, sans-serif";
+    wrapText(ctx, labels[i], x + barW / 2, pad.top + ch + 14, slot);
+  });
+}
+
+function getBranchTrendSeries(branch) {
+  var types = ["month", "quarter", "half"];
+  for (var t = 0; t < types.length; t++) {
+    var rows = STORE.businessRows.filter(function (r) { return r.branch === branch && r.period.type === types[t] && r.metrics.totalCompleted.status === "ok"; });
+    if (rows.length >= 2) {
+      rows.sort(function (a, b) { return (a.year - b.year) || (a.period.key - b.period.key); });
+      return {
+        labels: rows.map(function (r) { return types[t] === "month" ? MONTH_LABELS[r.period.key - 1] : r.period.label; }),
+        values: rows.map(function (r) { return r.metrics.totalCompleted.value; })
+      };
+    }
+  }
+  return { labels: [], values: [] };
+}
+
+// ================= RENDER: circle select & detail tabs =================
+var circleSelectEl = document.getElementById("circleSelect");
+function renderCircleSelect() {
+  var branches = getAllKnownBranches();
+  if (branches.length === 0) { circleSelectEl.innerHTML = '<option value="">لا توجد دوائر</option>'; circleSelectEl.disabled = true; UI.selectedBranch = null; return; }
+  circleSelectEl.disabled = false;
+  circleSelectEl.innerHTML = branches.map(function (b) { return '<option value="' + escapeHtml(b) + '">' + b + "</option>"; }).join("");
+  if (!UI.selectedBranch || branches.indexOf(UI.selectedBranch) === -1) UI.selectedBranch = branches[0];
+  circleSelectEl.value = UI.selectedBranch;
+}
+circleSelectEl.addEventListener("change", function (e) { UI.selectedBranch = e.target.value; renderCircleDetail(); });
+
+function gaugeHtml(label, value, color) {
+  var pct = value == null ? 0 : Math.round(value);
+  var display = value == null ? "غير متاح" : pct + "/100";
+  return '<div><div class="gauge-label"><span>' + label + '</span><span>' + display + '</span></div>' +
+    '<div class="gauge-track" style="direction:ltr"><div class="gauge-fill" style="width:' + pct + "%;background:" + color + '"></div></div></div>';
+}
+
+function renderOverviewTab(panel, branch, row, rel) {
+  if (!row) { panel.innerHTML = '<div class="empty-state">لا توجد بيانات حجم أعمال لهذه الدائرة في الفترة المختارة.</div>'; return; }
+  var kpiHtml = '<div class="kpi-grid">' + KPI_DEFS.map(function (def) {
+    var m = row.metrics[def.key];
+    return '<div class="kpi-card"><div class="kicon">' + def.icon + '</div><div class="klabel">' + def.label + '</div><div class="kvalue" style="font-size:1.1rem">' + metricDisplay(m) + "</div></div>";
+  }).join("") + "</div>";
+
+  panel.innerHTML = kpiHtml + '<div class="charts-row" style="margin-top:16px">' +
+    '<div class="chart-box"><h4>اتجاه إجمالي الأعمال المنجزة</h4><canvas id="trendCanvas" height="180"></canvas></div>' +
+    '<div class="chart-box"><h4>تفصيل موثوقية الدائرة</h4><div id="relBreakdown"></div></div></div>';
+
+  var trendSeries = getBranchTrendSeries(branch);
+  var canvas = panel.querySelector("#trendCanvas");
+  if (trendSeries.labels.length >= 2) {
+    drawLineChart(canvas, trendSeries.labels, trendSeries.values);
+  } else {
+    var msgDiv = document.createElement("div");
+    msgDiv.className = "empty-state"; msgDiv.textContent = "تحتاج فترتين على الأقل من نفس النوع (شهري/ربعي) لعرض الاتجاه.";
+    canvas.replaceWith(msgDiv);
+  }
+
+  var relBox = panel.querySelector("#relBreakdown");
+  if (rel) {
+    relBox.innerHTML = '<div class="gauge-row">' +
+      gaugeHtml("الالتزام بالأهداف", rel.complianceAvailable ? rel.compliance : null, "var(--gold)") +
+      gaugeHtml("جودة البيانات", rel.quality, "var(--ok)") +
+      gaugeHtml("اتساق الأداء", rel.consistency.score, "var(--dark-green)") +
+      gaugeHtml("اكتمال البيانات", rel.completeness, "var(--warning)") + "</div>";
+  } else {
+    relBox.innerHTML = '<div class="empty-state">لا يمكن حساب الموثوقية بدون بيانات.</div>';
+  }
+}
+
+function renderServicesTab(panel, branch, row) {
+  if (!row) { panel.innerHTML = '<div class="empty-state">لا توجد بيانات لهذه الدائرة في الفترة المختارة.</div>'; return; }
+  panel.innerHTML = '<div class="charts-row"><div class="chart-box"><h4>توزيع الأعمال حسب نوع الخدمة</h4><canvas id="svcCanvas" height="220"></canvas></div>' +
+    '<div class="chart-box"><h4>مؤشرات الالتزام بالأهداف</h4><div id="targetGauges"></div></div></div>';
+
+  var defs = KPI_DEFS.concat([{ key: "qr", label: "QR", icon: "🔳" }]);
+  var palette = ["#173F33", "#2E7D4F", "#B9902E", "#c98a1b", "#5b7c69", "#2b4c9b", "#8a6d3b"];
+  var labels = [], values = [], colors = [];
+  defs.forEach(function (d, i) {
+    var m = row.metrics[d.key];
+    if (m.status === "ok") { labels.push(d.label); values.push(m.value); colors.push(palette[i % palette.length]); }
+  });
+  var canvas = panel.querySelector("#svcCanvas");
+  if (values.length > 0) drawBarChart(canvas, labels, values, colors);
+  else { var msgDiv = document.createElement("div"); msgDiv.className = "empty-state"; msgDiv.textContent = "لا توجد بيانات خدمات كافية لعرض الرسم."; canvas.replaceWith(msgDiv); }
+
+  var targetDefs = [
+    { key: "ratioAppointments", label: "حجز المواعيد", target: 0.30 },
+    { key: "ratioProactiveField", label: "الاستباقية + الميدانية", target: 0.15 },
+    { key: "ratioSelfService", label: "الخدمة الذاتية", target: 0.10 }
+  ];
+  panel.querySelector("#targetGauges").innerHTML = '<div class="gauge-row">' + targetDefs.map(function (d) {
+    var r = row.ratios[d.key];
+    var val = r && r.status === "ok" ? r.value : null;
+    var pct = val == null ? 0 : Math.min(100, Math.round(val * 100));
+    var targetPct = Math.round(d.target * 100);
+    var color = val == null ? "var(--muted)" : (val >= d.target ? "var(--ok)" : "var(--danger)");
+    var display = val == null ? "غير متاح" : (fmtPct(val) + " (الهدف ≥ " + targetPct + "%)");
+    return '<div><div class="gauge-label"><span>' + d.label + '</span><span>' + display + '</span></div>' +
+      '<div class="gauge-track" style="direction:ltr"><div class="gauge-fill" style="width:' + pct + "%;background:" + color + '"></div>' +
+      '<div class="gauge-target-mark" style="left:' + targetPct + '%"></div></div></div>';
+  }).join("") + "</div>";
+}
+
+function renderEmployeesTab(panel, branch) {
+  var months = UI.filter.type ? monthsInPeriod(UI.filter.type, UI.filter.key) : null;
+  var rows = STORE.employeeRows.filter(function (r) { return r.branch === branch && (months === null || months.indexOf(r.month) !== -1); });
+  if (rows.length === 0) {
+    panel.innerHTML = '<div class="empty-state">لا توجد بيانات موظفين لهذه الدائرة ضمن الفترة المختارة' + (STORE.employeeRows.length === 0 ? " (لم يتم رفع ملف أداء الموظفين بعد)." : ".") + "</div>";
+    return;
+  }
+  var byName = {};
+  rows.forEach(function (r) {
+    var k = normalizeArabic(r.employeeName);
+    byName[k] = byName[k] || { name: r.employeeName, served: 0, totalTxnTime: 0, totalLoginTime: 0, idleTime: 0, absentees: 0, firstLogin: null, lastLogout: null };
+    var agg = byName[k];
+    if (r.served.status === "ok") agg.served += r.served.value;
+    if (r.totalTxnTime.status === "ok") agg.totalTxnTime += r.totalTxnTime.value;
+    if (r.totalLoginTime.status === "ok") agg.totalLoginTime += r.totalLoginTime.value;
+    if (r.idleTime.status === "ok") agg.idleTime += r.idleTime.value;
+    if (r.absentees.status === "ok") agg.absentees += r.absentees.value;
+    if (r.firstLogin.status === "ok") agg.firstLogin = agg.firstLogin == null ? r.firstLogin.value : Math.min(agg.firstLogin, r.firstLogin.value);
+    if (r.lastLogout.status === "ok") agg.lastLogout = agg.lastLogout == null ? r.lastLogout.value : Math.max(agg.lastLogout, r.lastLogout.value);
+  });
+  var list = Object.keys(byName).map(function (k) { return byName[k]; });
+  list.sort(function (a, b) { return b.served - a.served; });
+
+  var rushedMap = {};
+  computeRushedPatterns().forEach(function (p) { rushedMap[p.branch + "|" + normalizeArabic(p.name)] = p.months.length; });
+
+  var rowsHtml = list.map(function (e) {
+    var avgTxn = e.served > 0 ? e.totalTxnTime / e.served : null;
+    var idlePct = e.totalLoginTime > 0 ? e.idleTime / e.totalLoginTime : null;
+    var rushedCount = rushedMap[branch + "|" + normalizeArabic(e.name)] || 0;
+    var flag = rushedCount > 0 ? ('<span class="flag-icon tip" tabindex="0">⚠️<span class="tip-bubble">نمط إدخال متسرّع في ' + rushedCount + ' فترة/فترات (متوسط معاملة أقل من 60 ثانية)</span></span>') : "";
+    return "<tr><td>" + escapeHtml(e.name) + " " + flag + "</td><td>" + fmtInt(e.served) + "</td>" +
+      "<td>" + (avgTxn != null ? fmtSeconds(avgTxn) : '<span class="na-text">—</span>') + "</td>" +
+      "<td>" + (idlePct != null ? fmtPct(idlePct) : '<span class="na-text">—</span>') + "</td>" +
+      "<td>" + fmtClock(e.firstLogin) + "</td><td>" + fmtClock(e.lastLogout) + "</td><td>" + fmtInt(e.absentees) + "</td></tr>";
+  }).join("");
+
+  panel.innerHTML = '<div style="overflow-x:auto"><table class="data-table"><thead><tr>' +
+    "<th>الموظف</th><th>عدد المخدومين</th><th>متوسط وقت المعاملة</th><th>نسبة الخمول</th><th>أول دخول</th><th>آخر خروج</th><th>غياب</th>" +
+    "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>";
+}
+
+function renderCircleDetail() {
+  var host = document.getElementById("circleDetailHost");
+  var branch = UI.selectedBranch;
+  if (!branch) { host.innerHTML = '<div class="empty-state"><span class="ic">🏢</span>لا توجد دوائر بعد.</div>'; return; }
+  var row = getRowsForPeriod(UI.filter.type, UI.filter.key, UI.filter.year).filter(function (r) { return r.branch === branch; })[0];
+  var rel = row ? computeReliability(row) : null;
+
+  host.innerHTML = '<div class="circle-detail-head"><h3>' + branch + ' <span style="font-weight:400;font-size:.8rem;opacity:.85">' + (BRANCH_GOV[branch] || "") + "</span></h3>" +
+    (rel ? relBadgeHtml(rel) : "") + "</div>" +
+    '<div class="tabs"><button class="tab-btn" data-tab="overview">نظرة عامة</button><button class="tab-btn" data-tab="services">الخدمات</button><button class="tab-btn" data-tab="employees">الموظفون</button></div>' +
+    '<div class="tab-panel" data-panel="overview"></div><div class="tab-panel" data-panel="services"></div><div class="tab-panel" data-panel="employees"></div>';
+
+  Array.prototype.forEach.call(host.querySelectorAll(".tab-btn"), function (btn) {
+    btn.addEventListener("click", function () { UI.activeCircleTab = btn.getAttribute("data-tab"); applyCircleTab(); });
+  });
+  applyCircleTab();
+
+  function applyCircleTab() {
+    Array.prototype.forEach.call(host.querySelectorAll(".tab-btn"), function (b) { b.classList.toggle("active", b.getAttribute("data-tab") === UI.activeCircleTab); });
+    Array.prototype.forEach.call(host.querySelectorAll(".tab-panel"), function (p) { p.classList.toggle("active", p.getAttribute("data-panel") === UI.activeCircleTab); });
+    if (UI.activeCircleTab === "overview") renderOverviewTab(host.querySelector('[data-panel="overview"]'), branch, row, rel);
+    if (UI.activeCircleTab === "services") renderServicesTab(host.querySelector('[data-panel="services"]'), branch, row);
+    if (UI.activeCircleTab === "employees") renderEmployeesTab(host.querySelector('[data-panel="employees"]'), branch);
+  }
+}
+
+// ================= TOP-LEVEL RECOMPUTE / INIT =================
+function recomputeAll() { renderFileList(); renderPeriodSelectors(); renderAll(); }
+function renderAll() { renderKPIBar(); renderMap(); renderCircleSelect(); renderCompare(); renderAlerts(); renderCircleDetail(); }
+
+// ================= UPLOAD / DRAG-DROP WIRING =================
+var fileInputEl = document.getElementById("fileInput");
+var dropZoneEl = document.getElementById("dropZone");
+var pickFilesBtn = document.getElementById("pickFilesBtn");
+var toggleUploadBtn = document.getElementById("toggleUploadBtn");
+var uploadSectionEl = document.getElementById("uploadSection");
+
+pickFilesBtn.addEventListener("click", function () { fileInputEl.click(); });
+fileInputEl.addEventListener("change", function (e) { handleFiles(e.target.files); fileInputEl.value = ""; });
+["dragenter", "dragover"].forEach(function (evt) { dropZoneEl.addEventListener(evt, function (e) { e.preventDefault(); dropZoneEl.classList.add("dragover"); }); });
+["dragleave", "drop"].forEach(function (evt) { dropZoneEl.addEventListener(evt, function (e) { e.preventDefault(); dropZoneEl.classList.remove("dragover"); }); });
+dropZoneEl.addEventListener("drop", function (e) { if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files); });
+toggleUploadBtn.addEventListener("click", function () { uploadSectionEl.classList.toggle("hidden"); });
+
+function init() {
+  var restored = loadFromLocalStorage();
+  recomputeAll();
+  if (restored) { uploadSectionEl.classList.add("hidden"); toast("تم استرجاع آخر بيانات محفوظة من هذا المتصفح.", "ok"); }
+}
+init();
+
+</script>
+</body>
+</html>
